@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+﻿import React, { useEffect, useRef, useState } from "react";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const API_BASE = "https://own-ai-ciog.onrender.com";
 const API_URL = `${API_BASE}/ask`;
 const RESUME_URL = `${API_BASE}/resume`;
 const STORAGE_KEY = "candidate_chat_history_v3";
 
 const languages = {
   en: { label: "English", speech: "en-IN" },
-  hi: { label: "हिन्दी", speech: "hi-IN" },
-  bn: { label: "বাংলা", speech: "bn-IN" },
+  hi: { label: "à¤¹à¤¿à¤¨à¥à¤¦à¥€", speech: "hi-IN" },
+  bn: { label: "à¦¬à¦¾à¦‚à¦²à¦¾", speech: "bn-IN" },
 };
 
 const copy = {
@@ -25,28 +25,28 @@ const copy = {
     analyze: "Analyze match",
   },
   hi: {
-    placeholder: "Mrinmoy के बारे में कुछ पूछें...",
-    upload: "नया रिज्यूमे अपलोड करें",
-    interview: "इंटरव्यू प्रश्न",
-    match: "जॉब मैच स्कोर",
-    hire: "इस उम्मीदवार को क्यों नियुक्त करें?",
-    export: "चैट को PDF में डाउनलोड करें",
-    jobRole: "लक्षित नौकरी की भूमिका",
-    jobDescription: "पूरा Job Description यहाँ पेस्ट करें...",
-    generate: "बनाएँ",
-    analyze: "मैच जाँचें",
+    placeholder: "Mrinmoy à¤•à¥‡ à¤¬à¤¾à¤°à¥‡ à¤®à¥‡à¤‚ à¤•à¥à¤› à¤ªà¥‚à¤›à¥‡à¤‚...",
+    upload: "à¤¨à¤¯à¤¾ à¤°à¤¿à¤œà¥à¤¯à¥‚à¤®à¥‡ à¤…à¤ªà¤²à¥‹à¤¡ à¤•à¤°à¥‡à¤‚",
+    interview: "à¤‡à¤‚à¤Ÿà¤°à¤µà¥à¤¯à¥‚ à¤ªà¥à¤°à¤¶à¥à¤¨",
+    match: "à¤œà¥‰à¤¬ à¤®à¥ˆà¤š à¤¸à¥à¤•à¥‹à¤°",
+    hire: "à¤‡à¤¸ à¤‰à¤®à¥à¤®à¥€à¤¦à¤µà¤¾à¤° à¤•à¥‹ à¤•à¥à¤¯à¥‹à¤‚ à¤¨à¤¿à¤¯à¥à¤•à¥à¤¤ à¤•à¤°à¥‡à¤‚?",
+    export: "à¤šà¥ˆà¤Ÿ à¤•à¥‹ PDF à¤®à¥‡à¤‚ à¤¡à¤¾à¤‰à¤¨à¤²à¥‹à¤¡ à¤•à¤°à¥‡à¤‚",
+    jobRole: "à¤²à¤•à¥à¤·à¤¿à¤¤ à¤¨à¥Œà¤•à¤°à¥€ à¤•à¥€ à¤­à¥‚à¤®à¤¿à¤•à¤¾",
+    jobDescription: "à¤ªà¥‚à¤°à¤¾ Job Description à¤¯à¤¹à¤¾à¤ à¤ªà¥‡à¤¸à¥à¤Ÿ à¤•à¤°à¥‡à¤‚...",
+    generate: "à¤¬à¤¨à¤¾à¤à¤",
+    analyze: "à¤®à¥ˆà¤š à¤œà¤¾à¤à¤šà¥‡à¤‚",
   },
   bn: {
-    placeholder: "Mrinmoy সম্পর্কে কিছু জিজ্ঞাসা করুন...",
-    upload: "নতুন রেজিউমে আপলোড করুন",
-    interview: "ইন্টারভিউ প্রশ্ন",
-    match: "জব ম্যাচ স্কোর",
-    hire: "এই প্রার্থীকে কেন নিয়োগ করবেন?",
-    export: "চ্যাট PDF হিসেবে ডাউনলোড করুন",
-    jobRole: "টার্গেট চাকরির ভূমিকা",
-    jobDescription: "সম্পূর্ণ Job Description এখানে পেস্ট করুন...",
-    generate: "তৈরি করুন",
-    analyze: "ম্যাচ বিশ্লেষণ করুন",
+    placeholder: "Mrinmoy à¦¸à¦®à§à¦ªà¦°à§à¦•à§‡ à¦•à¦¿à¦›à§ à¦œà¦¿à¦œà§à¦žà¦¾à¦¸à¦¾ à¦•à¦°à§à¦¨...",
+    upload: "à¦¨à¦¤à§à¦¨ à¦°à§‡à¦œà¦¿à¦‰à¦®à§‡ à¦†à¦ªà¦²à§‹à¦¡ à¦•à¦°à§à¦¨",
+    interview: "à¦‡à¦¨à§à¦Ÿà¦¾à¦°à¦­à¦¿à¦‰ à¦ªà§à¦°à¦¶à§à¦¨",
+    match: "à¦œà¦¬ à¦®à§à¦¯à¦¾à¦š à¦¸à§à¦•à§‹à¦°",
+    hire: "à¦à¦‡ à¦ªà§à¦°à¦¾à¦°à§à¦¥à§€à¦•à§‡ à¦•à§‡à¦¨ à¦¨à¦¿à¦¯à¦¼à§‹à¦— à¦•à¦°à¦¬à§‡à¦¨?",
+    export: "à¦šà§à¦¯à¦¾à¦Ÿ PDF à¦¹à¦¿à¦¸à§‡à¦¬à§‡ à¦¡à¦¾à¦‰à¦¨à¦²à§‹à¦¡ à¦•à¦°à§à¦¨",
+    jobRole: "à¦Ÿà¦¾à¦°à§à¦—à§‡à¦Ÿ à¦šà¦¾à¦•à¦°à¦¿à¦° à¦­à§‚à¦®à¦¿à¦•à¦¾",
+    jobDescription: "à¦¸à¦®à§à¦ªà§‚à¦°à§à¦£ Job Description à¦à¦–à¦¾à¦¨à§‡ à¦ªà§‡à¦¸à§à¦Ÿ à¦•à¦°à§à¦¨...",
+    generate: "à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨",
+    analyze: "à¦®à§à¦¯à¦¾à¦š à¦¬à¦¿à¦¶à§à¦²à§‡à¦·à¦£ à¦•à¦°à§à¦¨",
   },
 };
 
@@ -284,7 +284,7 @@ export default function App() {
       const response = await fetch(`${API_BASE}/resume`, { method: "POST", body: form });
       if (!response.ok) throw new Error(await responseError(response, "Resume upload failed."));
       const result = await response.json();
-      setNotice(`✓ ${result.filename} is now active`);
+      setNotice(`âœ“ ${result.filename} is now active`);
       appendAssistant(result.message);
     } catch (error) {
       setNotice(error.message);
@@ -392,7 +392,7 @@ export default function App() {
         heightLeft -= pageHeight - 20;
       }
       pdf.save("Mrinmoy_Candidate_AI_Chat.pdf");
-      setNotice("✓ Chat exported as PDF");
+      setNotice("âœ“ Chat exported as PDF");
     } catch {
       setNotice("PDF export failed. Please try again.");
     } finally {
@@ -417,25 +417,25 @@ export default function App() {
           <div><h2>Candidate AI</h2><p>Mrinmoy Maity</p></div>
         </div>
 
-        <button className="new-chat" onClick={startNewChat}><span>＋</span>New chat</button>
+        <button className="new-chat" onClick={startNewChat}><span>ï¼‹</span>New chat</button>
 
         <p className="history-heading">AI tools</p>
         <div className="feature-tools">
-          <button onClick={() => uploadRef.current?.click()}>↥ <span>{text.upload}</span></button>
-          <button onClick={() => setPanel("interview")}>◫ <span>{text.interview}</span></button>
-          <button onClick={() => setPanel("match")}>◎ <span>{text.match}</span></button>
-          <button onClick={() => setPanel("hire")}>✦ <span>{text.hire}</span></button>
-          <button onClick={exportChatPdf}>⇩ <span>{text.export}</span></button>
-          <a href={RESUME_URL} target="_blank" rel="noreferrer">▣ <span>Download current resume</span></a>
+          <button onClick={() => uploadRef.current?.click()}>â†¥ <span>{text.upload}</span></button>
+          <button onClick={() => setPanel("interview")}>â—« <span>{text.interview}</span></button>
+          <button onClick={() => setPanel("match")}>â—Ž <span>{text.match}</span></button>
+          <button onClick={() => setPanel("hire")}>âœ¦ <span>{text.hire}</span></button>
+          <button onClick={exportChatPdf}>â‡© <span>{text.export}</span></button>
+          <a href={RESUME_URL} target="_blank" rel="noreferrer">â–£ <span>Download current resume</span></a>
         </div>
 
         <p className="history-heading">Conversation history</p>
         <div className="history-list">
           {chats.map((chat) => (
             <button key={chat.id} className={`history-item ${chat.id === activeChatId ? "active" : ""}`} onClick={() => selectChat(chat.id)}>
-              <span className="chat-symbol">◌</span>
+              <span className="chat-symbol">â—Œ</span>
               <span className="chat-title">{chat.title}</span>
-              <span className="delete-chat" title="Delete chat" onClick={(event) => deleteChat(event, chat.id)}>×</span>
+              <span className="delete-chat" title="Delete chat" onClick={(event) => deleteChat(event, chat.id)}>Ã—</span>
             </button>
           ))}
         </div>
@@ -444,10 +444,10 @@ export default function App() {
 
       <section className="chat-section">
         <header className="header">
-          <button className="menu-button" aria-label="Open sidebar" onClick={() => setSidebarOpen(true)}>☰</button>
+          <button className="menu-button" aria-label="Open sidebar" onClick={() => setSidebarOpen(true)}>â˜°</button>
           <div className="header-content"><h3>Mrinmoy&apos;s AI Representative</h3><p>Ask questions about the candidate</p></div>
           <label className="language-picker">
-            <span>文</span>
+            <span>æ–‡</span>
             <select value={language} onChange={(event) => setLanguage(event.target.value)}>
               {Object.entries(languages).map(([code, item]) => <option key={code} value={code}>{item.label}</option>)}
             </select>
@@ -455,11 +455,11 @@ export default function App() {
           <button className={`speech-toggle ${autoSpeak ? "active" : ""}`} onClick={() => {
             window.speechSynthesis?.cancel();
             setAutoSpeak((current) => !current);
-          }} title="Automatically speak AI answers">{autoSpeak ? "🔊" : "🔇"}</button>
+          }} title="Automatically speak AI answers">{autoSpeak ? "ðŸ”Š" : "ðŸ”‡"}</button>
           <div className="ai-badge">AI</div>
         </header>
 
-        {notice && <button className="notice" onClick={() => setNotice("")}>{notice}<span>×</span></button>}
+        {notice && <button className="notice" onClick={() => setNotice("")}>{notice}<span>Ã—</span></button>}
 
         <div className="chat-window">
           {activeChat.messages.length === 0 ? (
@@ -468,7 +468,7 @@ export default function App() {
               <h1>How can I help you?</h1>
               <p>Ask about Mrinmoy&apos;s education, skills, projects, experience, certifications or resume.</p>
               <div className="suggestions">
-                {suggestions.map((suggestion) => <button key={suggestion} onClick={() => sendMessage(suggestion)}>{suggestion}<span>↗</span></button>)}
+                {suggestions.map((suggestion) => <button key={suggestion} onClick={() => sendMessage(suggestion)}>{suggestion}<span>â†—</span></button>)}
               </div>
             </section>
           ) : (
@@ -484,7 +484,7 @@ export default function App() {
                       ) : message.content ? <p>{message.content}</p> : <span className="typing"><i /><i /><i /></span>}
                     </div>
                     {message.role === "assistant" && message.content && !message.error && !message.match && (
-                      <button className="listen-button" onClick={() => speak(message.content)}>🔊 Listen</button>
+                      <button className="listen-button" onClick={() => speak(message.content)}>ðŸ”Š Listen</button>
                     )}
                   </div>
                 </article>
@@ -497,8 +497,8 @@ export default function App() {
         <footer className="input-area">
           <div className="input-box">
             <textarea rows="1" value={question} placeholder={text.placeholder} disabled={isStreaming} onChange={(event) => setQuestion(event.target.value)} onKeyDown={handleKeyDown} />
-            <button className={`voice-button ${listening ? "listening" : ""}`} aria-label="Voice input" onClick={toggleVoiceInput}>{listening ? "■" : "🎙"}</button>
-            <button className="send-button" aria-label="Send message" disabled={!question.trim() || isStreaming} onClick={() => sendMessage()}>{isStreaming ? "■" : "↑"}</button>
+            <button className={`voice-button ${listening ? "listening" : ""}`} aria-label="Voice input" onClick={toggleVoiceInput}>{listening ? "â– " : "ðŸŽ™"}</button>
+            <button className="send-button" aria-label="Send message" disabled={!question.trim() || isStreaming} onClick={() => sendMessage()}>{isStreaming ? "â– " : "â†‘"}</button>
           </div>
           <p className="disclaimer">AI answers using only the active candidate resume.</p>
         </footer>
@@ -507,19 +507,19 @@ export default function App() {
       {panel && (
         <div className="modal-overlay" onMouseDown={() => setPanel(null)}>
           <section className="feature-modal" onMouseDown={(event) => event.stopPropagation()}>
-            <button className="modal-close" onClick={() => setPanel(null)}>×</button>
+            <button className="modal-close" onClick={() => setPanel(null)}>Ã—</button>
             {panel === "interview" && <>
-              <div className="modal-icon">◫</div><h2>{text.interview}</h2><p>Create resume-based technical and project questions.</p>
+              <div className="modal-icon">â—«</div><h2>{text.interview}</h2><p>Create resume-based technical and project questions.</p>
               <label>{text.jobRole}</label><input value={jobRole} onChange={(event) => setJobRole(event.target.value)} />
               <button className="modal-action" disabled={isStreaming} onClick={generateInterviewQuestions}>{text.generate}</button>
             </>}
             {panel === "match" && <>
-              <div className="modal-icon">◎</div><h2>{text.match}</h2><p>Compare the active resume with a pasted Job Description.</p>
+              <div className="modal-icon">â—Ž</div><h2>{text.match}</h2><p>Compare the active resume with a pasted Job Description.</p>
               <textarea className="jd-input" value={jobDescription} onChange={(event) => setJobDescription(event.target.value)} placeholder={text.jobDescription} />
               <button className="modal-action" disabled={isStreaming} onClick={analyzeMatch}>{text.analyze}</button>
             </>}
             {panel === "hire" && <>
-              <div className="modal-icon">✦</div><h2>{text.hire}</h2><p>Create an honest recruiter answer. Add a Job Description for a tailored version.</p>
+              <div className="modal-icon">âœ¦</div><h2>{text.hire}</h2><p>Create an honest recruiter answer. Add a Job Description for a tailored version.</p>
               <textarea className="jd-input" value={jobDescription} onChange={(event) => setJobDescription(event.target.value)} placeholder={`${text.jobDescription} (optional)`} />
               <button className="modal-action" disabled={isStreaming} onClick={generateWhyHire}>{text.generate}</button>
             </>}
@@ -531,3 +531,4 @@ export default function App() {
     </main>
   );
 }
+
