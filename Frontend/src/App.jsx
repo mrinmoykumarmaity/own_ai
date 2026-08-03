@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-const API_BASE = "https://own-ai-ciog.onrender.com";
+const API_BASE = "https://own-ai-cjoq.onrender.com";
 const API_URL = `${API_BASE}/ask`;
 const RESUME_URL = `${API_BASE}/resume`;
 const STORAGE_KEY = "candidate_chat_history_v3";
