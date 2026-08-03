@@ -1,0 +1,119 @@
+{
+  "name": "Mrinmoy Kumar Maity",
+  "title": "Aspiring AI Engineer",
+  "location": "West Bengal, India",
+  "email": "maitymrinmoy65@gmail.com",
+  "phone": "+91 8927469163",
+  "summary": "Aspiring AI Engineer with hands-on experience in Python, machine learning, generative AI, LLMs, RAG, and data analytics. Interested in developing practical AI applications and intelligent automation systems.",
+  "education": [
+    {
+      "institution": "Kharagpur College",
+      "degree": "Bachelor of Computer Applications (BCA), Computational Science",
+      "start_year": 2023,
+      "end_year": 2027,
+      "cgpa": 7.65
+    },
+    {
+      "institution": "Jhargram Kumud Kumari Institution",
+      "degree": "Class 12, Computer and Information Sciences",
+      "start_year": 2021,
+      "end_year": 2023,
+      "cgpa": 6.69
+    }
+  ],
+  "skills": {
+    "programming_languages": [
+      "Python",
+      "SQL"
+    ],
+    "ai_ml": [
+      "Machine Learning",
+      "Generative AI",
+      "Large Language Models",
+      "Prompt Engineering",
+      "RAG",
+      "LangGraph",
+      "AI Agents"
+    ],
+    "frameworks": [
+      "FastAPI",
+      "Flask",
+      "Pydantic",
+      "Scikit-learn",
+      "Streamlit"
+    ],
+    "data_analytics": [
+      "Pandas",
+      "NumPy",
+      "Matplotlib",
+      "Power BI",
+      "Excel"
+    ],
+    "tools": [
+      "Git",
+      "GitHub",
+      "VS Code",
+      "Groq API"
+    ]
+  },
+  "projects": [
+    {
+      "name": "Resume_persour",
+      "description": "An AI-powered system that compares candidate resumes with job descriptions, calculates a match score, and explains rejection reasons.",
+      "technologies": [
+        "Python",
+        "Groq API",
+        "Pydantic",
+        "Prompt Engineering"
+      ],
+      "github_url": "https://github.com/mrinmoykumarmaity/resume_persour"
+    },
+    {
+      "name": "AI-Powered Vector Database and RAG System",
+      "description": "A Python-based educational vector database with semantic search, an interactive web interface, and document embeddings. The project demonstrates how vectors are stored, compared, visualized, and used to retrieve relevant document chunks before an LLM generates a response.",
+      "technologies": [
+        "Python",
+        "Flask",
+        "Ollama",
+        "Vector Database",
+        "REST API",
+        "RAG"
+      ],
+      "github_url": "https://github.com/mrinmoykumarmaity/ai-vector-db-rag-system"
+    }
+  ],
+  "experience": [
+    {
+      "role": "Data Analytics Job Simulation",
+      "organization": "Tata Group through Forage",
+      "duration": "July 2025",
+      "description": "Performed exploratory data analysis and proposed an AI-driven predictive modelling and collections strategy."
+    },
+    {
+      "role": "Data Analyst Job Simulation",
+      "organization": "Deloitte Australia through Forage",
+      "duration": "May 2025 to July 2025",
+      "description": "Completed data analysis and forensic technology tasks and developed an interactive Tableau dashboard."
+    }
+  ],
+  "achievements": [],
+  "certifications": [
+    {
+      "name": "Tata Group Data Analytics Job Simulation",
+      "issuer": "Forage",
+      "year": 2025,
+      "credential_url": null
+    },
+    {
+      "name": "Deloitte Australia Data Analytics Job Simulation",
+      "issuer": "Forage",
+      "year": 2025,
+      "credential_url": null
+    }
+  ],
+  "social_links": {
+    "linkedin": "https://www.linkedin.com/in/mrinmoykumarmaity/",
+    "github": "https://github.com/mrinmoykumarmaity",
+    "portfolio": "https://portfolio-website-eta-eight-93.vercel.app/"
+  }
+}
