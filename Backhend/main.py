@@ -356,39 +356,78 @@ async def upload_resume(file: UploadFile = File(...)):
 
 @app.get("/resume")
 def download_resume():
-    if not resume_store.has_pdf():
-        raise HTTPException(status_code=404, detail="No resume PDF has been uploaded yet.")
-    return FileResponse(
-        settings.active_resume_path,
-        media_type="application/pdf",
-        filename=resume_store.filename(),
+    uploaded_resume = settings.active_resume_path
+    default_resume = BASE_DIR / "my_resume_new.pdf"
+
+    if uploaded_resume.exists():
+        return FileResponse(
+            uploaded_resume,
+            media_type="application/pdf",
+            filename=resume_store.filename() or "uploaded_resume.pdf",
+        )
+
+    if default_resume.exists():
+        return FileResponse(
+            default_resume,
+            media_type="application/pdf",
+            filename="Mrinmoy_Kumar_Maity_Resume.pdf",
+        )
+
+    raise HTTPException(
+        status_code=404,
+        detail="Resume PDF was not found.",
     )
 
-
 RESUME_REQUEST_PATTERN = re.compile(
-    r"\b(download|send|share|get|view|open).{0,25}\b(resume|cv)\b|\b(resume|cv)\b.{0,25}\b(download|link)\b",
+    r"\b(resume|cv)\b",
     re.IGNORECASE,
 )
 
 
 @app.post("/ask")
 def ask_candidate(request: QuestionRequest):
+    # Resume-related question
     if RESUME_REQUEST_PATTERN.search(request.question):
-        if not resume_store.has_pdf():
-            message = "No resume PDF has been uploaded yet. Use the Upload Resume button first."
+        uploaded_resume = settings.active_resume_path
+        default_resume = BASE_DIR / "my_resume_new.pdf"
+
+        if not uploaded_resume.exists() and not default_resume.exists():
+            message = (
+                "The candidate's resume PDF is currently unavailable."
+            )
         else:
-            message = f"You can download the candidate's resume here: {settings.public_base_url}/resume"
-        return StreamingResponse(iter([message]), media_type="text/plain")
+            base_url = settings.public_base_url.rstrip("/")
 
+            message = (
+                "You can download the candidate's resume here: "
+                f"{base_url}/resume"
+            )
+
+        return StreamingResponse(
+            iter([message]),
+            media_type="text/plain",
+            headers={
+                "Cache-Control": "no-cache",
+                "X-Accel-Buffering": "no",
+            },
+        )
+
+    # Check Groq API key
     if not settings.groq_api_key:
-        raise HTTPException(status_code=503, detail="GROQ_API_KEY is missing from backend/.env.")
+        raise HTTPException(
+            status_code=503,
+            detail="GROQ_API_KEY is missing from the backend environment.",
+        )
 
+    # Normal AI response
     return StreamingResponse(
         stream_answer(request),
         media_type="text/plain",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
     )
-
 
 @app.post("/interview-questions", response_model=InterviewQuestionResult)
 def generate_interview_questions(request: InterviewQuestionRequest):
