@@ -521,7 +521,7 @@ export default function App() {
           {activeChat.messages.length === 0 ? (
             <section className="welcome">
               <div className="welcome-logo-wrap"><div className="welcome-logo">M</div><span className="welcome-status"><Icon name="check" size={12} /></span></div>
-              <p className="welcome-kicker">ASPIRING AI ENGINEER</p>
+              <p className="welcome-kicker">AI ENGINEER / SOFTWARE ENGINEER</p>
               <h1>Mrinmoy Kumar Maity</h1>
               <p className="welcome-copy">Ask about Mrinmoy&apos;s skills, projects, experience, education or suitability for a role. Every answer is grounded in the active resume.</p>
               <div className="suggestions">
