@@ -1,21 +1,21 @@
 {
   "name": "Mrinmoy Kumar Maity",
-  "title": "Aspiring AI Engineer",
+  "title": "Junior AI/ML Engineer | Generative AI and Python Developer",
   "location": "West Bengal, India",
   "email": "maitymrinmoy65@gmail.com",
   "phone": "+91 8927469163",
-  "summary": "Aspiring AI Engineer with hands-on experience in Python, machine learning, generative AI, LLMs, RAG, and data analytics. Interested in developing practical AI applications and intelligent automation systems.",
+  "summary": "Entry-level AI/ML Engineer with hands-on experience building practical applications using Python, machine learning, generative AI, large language models, retrieval-augmented generation, and REST APIs. Experienced in developing resume-screening systems, semantic-search applications, vector databases, and resume-grounded AI assistants using FastAPI, Flask, Pydantic, Groq API, Ollama, React, and LangGraph. Strong foundation in prompt engineering, structured LLM outputs, data analysis, and full-stack AI application development. Interested in contributing to AI engineering, generative AI, intelligent automation, and machine learning projects.",
   "education": [
     {
       "institution": "Kharagpur College",
-      "degree": "Bachelor of Computer Applications (BCA), Computational Science",
+      "degree": "Bachelor of Computer Applications (BCA), Computer Science",
       "start_year": 2023,
       "end_year": 2027,
       "cgpa": 7.65
     },
     {
       "institution": "Jhargram Kumud Kumari Institution",
-      "degree": "Class 12, Computer and Information Sciences",
+      "degree": "Higher Secondary Education (Class XII), Computer and Information Sciences",
       "start_year": 2021,
       "end_year": 2023,
       "cgpa": 6.69
@@ -24,22 +24,29 @@
   "skills": {
     "programming_languages": [
       "Python",
-      "SQL"
+      "SQL",
+      "JavaScript"
     ],
     "ai_ml": [
       "Machine Learning",
       "Generative AI",
       "Large Language Models",
+      "Retrieval-Augmented Generation",
       "Prompt Engineering",
-      "RAG",
+      "Semantic Search",
+      "Vector Databases",
       "LangGraph",
-      "AI Agents"
+      "AI Agents",
+      "Structured LLM Output"
     ],
-    "frameworks": [
+    "frameworks_libraries": [
       "FastAPI",
       "Flask",
       "Pydantic",
       "Scikit-learn",
+      "LangChain",
+      "React",
+      "Vite",
       "Streamlit"
     ],
     "data_analytics": [
@@ -47,35 +54,63 @@
       "NumPy",
       "Matplotlib",
       "Power BI",
-      "Excel"
+      "Tableau",
+      "Excel",
+      "Exploratory Data Analysis",
+      "Data Cleaning"
     ],
-    "tools": [
+    "tools_platforms": [
       "Git",
       "GitHub",
       "VS Code",
-      "Groq API"
+      "Groq API",
+      "Ollama",
+      "REST APIs",
+      "Render",
+      "Vercel"
     ]
   },
   "projects": [
     {
-      "name": "Resume_persour",
-      "description": "An AI-powered system that compares candidate resumes with job descriptions, calculates a match score, and explains rejection reasons.",
+      "name": "Candidate AI Representative",
+      "description": "Built and deployed a full-stack, resume-grounded AI assistant that enables recruiters to ask questions about a candidate using the active resume and structured profile data. Implemented streaming AI responses, PDF resume upload and download, interview-question generation, job-description suitability scoring, recruiter summaries, multilingual support, speech-to-text, text-to-speech, conversation history, and PDF chat export. Deployed the React frontend on Vercel and the FastAPI backend on Render.",
+      "technologies": [
+        "Python",
+        "FastAPI",
+        "React",
+        "Vite",
+        "Groq API",
+        "Pydantic",
+        "JavaScript",
+        "REST API",
+        "Render",
+        "Vercel"
+      ],
+      "github_url": "https://github.com/mrinmoykumarmaity/own_ai"
+    },
+    {
+      "name": "ResumeParser AI - Intelligent Candidate Screening System",
+      "description": "Developed an AI-powered candidate-screening system that extracts relevant information from resumes, compares candidate profiles with job descriptions, calculates an explainable match score, identifies missing skills, and provides evidence-based recommendations. Used Pydantic models to validate structured LLM outputs and improve reliability.",
       "technologies": [
         "Python",
         "Groq API",
         "Pydantic",
-        "Prompt Engineering"
+        "Prompt Engineering",
+        "Generative AI",
+        "Structured JSON"
       ],
       "github_url": "https://github.com/mrinmoykumarmaity/resume_persour"
     },
     {
       "name": "AI-Powered Vector Database and RAG System",
-      "description": "A Python-based educational vector database with semantic search, an interactive web interface, and document embeddings. The project demonstrates how vectors are stored, compared, visualized, and used to retrieve relevant document chunks before an LLM generates a response.",
+      "description": "Developed an educational vector database and retrieval-augmented generation system with document chunking, semantic search, vector similarity comparison, document embeddings, and an interactive web interface. Integrated local Ollama models to generate embeddings and context-aware answers from retrieved document chunks. Built REST APIs for document management, semantic retrieval, and vector-search operations.",
       "technologies": [
         "Python",
         "Flask",
         "Ollama",
+        "Llama 3.2",
         "Vector Database",
+        "Semantic Search",
         "REST API",
         "RAG"
       ],
@@ -84,28 +119,32 @@
   ],
   "experience": [
     {
-      "role": "Data Analytics Job Simulation",
+      "role": "Data Analytics Virtual Experience Program",
       "organization": "Tata Group through Forage",
       "duration": "July 2025",
-      "description": "Performed exploratory data analysis and proposed an AI-driven predictive modelling and collections strategy."
+      "description": "Conducted exploratory data analysis using generative AI tools to evaluate data quality and identify customer delinquency risk indicators. Developed a predictive-modelling framework and proposed an AI-driven collections strategy incorporating automation, responsible AI, and regulatory compliance."
     },
     {
-      "role": "Data Analyst Job Simulation",
+      "role": "Data Analyst Virtual Experience Program",
       "organization": "Deloitte Australia through Forage",
       "duration": "May 2025 to July 2025",
-      "description": "Completed data analysis and forensic technology tasks and developed an interactive Tableau dashboard."
+      "description": "Analyzed business and forensic datasets to identify patterns, inconsistencies, and actionable insights. Developed an interactive Tableau dashboard and used Excel to classify data, perform analysis, and communicate findings through a structured business report."
     }
   ],
-  "achievements": [],
+  "achievements": [
+    "Designed and deployed a full-stack AI representative with a React frontend, FastAPI backend, streaming LLM responses, and resume-grounded question answering.",
+    "Developed multiple practical AI applications covering generative AI, semantic search, vector databases, RAG, structured LLM outputs, and intelligent candidate screening.",
+    "Successfully deployed AI applications using Vercel and Render with secure environment-variable configuration and cross-origin API integration."
+  ],
   "certifications": [
     {
-      "name": "Tata Group Data Analytics Job Simulation",
+      "name": "Tata Group Data Analytics Virtual Experience Program",
       "issuer": "Forage",
       "year": 2025,
       "credential_url": null
     },
     {
-      "name": "Deloitte Australia Data Analytics Job Simulation",
+      "name": "Deloitte Australia Data Analytics Virtual Experience Program",
       "issuer": "Forage",
       "year": 2025,
       "credential_url": null
@@ -114,6 +153,7 @@
   "social_links": {
     "linkedin": "https://www.linkedin.com/in/mrinmoykumarmaity/",
     "github": "https://github.com/mrinmoykumarmaity",
-    "portfolio": "https://portfolio-website-eta-eight-93.vercel.app/"
+    "portfolio": "https://portfolio-website-eta-eight-93.vercel.app/",
+    "candidate_ai": "https://own-ai-drab.vercel.app/"
   }
 }
