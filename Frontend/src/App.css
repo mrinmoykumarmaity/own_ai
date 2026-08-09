@@ -1574,6 +1574,25 @@ select:focus-visible {
   }
 }
 
+/* Final message-contrast safeguard */
+.message.user .message-text {
+  background: #0a84ff !important;
+  color: #ffffff !important;
+}
+
+.message.user .message-text p {
+  color: #ffffff !important;
+}
+
+.message.assistant .message-text {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #1d1d1f !important;
+}
+
+.message.assistant .message-text p {
+  color: #1d1d1f !important;
+}
+
 /* ========================================================================== */
 /* macOS recruiter theme                                                     */
 /* ========================================================================== */
