@@ -4,6 +4,7 @@ const API_BASE = "https://own-ai-cjoq.onrender.com";
 const API_URL = `${API_BASE}/ask`;
 const RESUME_URL = `${API_BASE}/resume`;
 const STORAGE_KEY = "candidate_chat_history_v3";
+const THEME_KEY = "candidate_ai_theme";
 
 const languages = {
   en: { label: "English", speech: "en-IN" },
@@ -37,6 +38,8 @@ const iconPaths = {
   user: <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>,
   check: <><path d="m5 12 4 4L19 6" /></>,
   clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
+  sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41" /></>,
+  moon: <><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.8 6.8 0 0 0 21 12.8Z" /></>,
 };
 
 function Icon({ name, size = 18, className = "" }) {
@@ -111,6 +114,17 @@ function loadChats() {
   return [createChat()];
 }
 
+function getInitialTheme() {
+  try {
+    const savedTheme = localStorage.getItem(THEME_KEY);
+    if (savedTheme === "light" || savedTheme === "dark") return savedTheme;
+  } catch {
+    // Local storage may be unavailable in privacy mode.
+  }
+
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
 async function responseError(response, fallback) {
   try {
     const payload = await response.json();
@@ -150,6 +164,7 @@ export default function App() {
   const [language, setLanguage] = useState("en");
   const [listening, setListening] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(false);
+  const [theme, setTheme] = useState(getInitialTheme);
   const [panel, setPanel] = useState(null);
   const [jobRole, setJobRole] = useState("AI Engineer");
   const [jobDescription, setJobDescription] = useState("");
@@ -166,6 +181,15 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
   }, [chats]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    localStorage.setItem(THEME_KEY, theme);
+
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    themeMeta?.setAttribute("content", theme === "dark" ? "#191a1f" : "#eef2f8");
+  }, [theme]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -506,6 +530,16 @@ export default function App() {
             <div className="header-content"><span className="header-kicker">CANDIDATE PROFILE</span><h3>Mrinmoy Kumar Maity</h3><p>AI Engineer / Software Engineer</p></div>
           </div>
           <div className="header-actions">
+            <button
+              className="theme-toggle"
+              type="button"
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+              aria-pressed={theme === "dark"}
+              title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+              onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")}
+            >
+              <Icon name={theme === "dark" ? "sun" : "moon"} size={17} />
+            </button>
             <label className="language-picker">
               <Icon name="language" size={16} />
               <select value={language} onChange={(event) => setLanguage(event.target.value)} aria-label="Response language">
