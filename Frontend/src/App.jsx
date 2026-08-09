@@ -450,9 +450,14 @@ export default function App() {
 
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="sidebar-top">
+          <div className="mac-traffic-lights" aria-hidden="true">
+            <span className="mac-dot mac-dot-close" />
+            <span className="mac-dot mac-dot-minimize" />
+            <span className="mac-dot mac-dot-expand" />
+          </div>
           <div className="brand">
             <div className="logo-wrap"><div className="logo">M</div><span className="logo-status" /></div>
-            <div className="brand-copy"><span className="brand-kicker">AI REPRESENTATIVE</span><h2>Candidate AI</h2><p>Mrinmoy Kumar Maity</p></div>
+            <div className="brand-copy"><span className="brand-kicker">AI &amp; SOFTWARE ENGINEER</span><h2>Candidate AI</h2><p>Mrinmoy Kumar Maity</p></div>
           </div>
 
           <button className="new-chat" onClick={startNewChat}>
@@ -498,7 +503,7 @@ export default function App() {
           <div className="header-left">
             <button className="menu-button" aria-label="Open sidebar" onClick={() => setSidebarOpen(true)}><Icon name="menu" size={20} /></button>
             <div className="header-avatar">M<span /></div>
-            <div className="header-content"><span className="header-kicker">CANDIDATE PROFILE</span><h3>Mrinmoy Kumar Maity</h3><p>AI/ML Engineer · Resume assistant</p></div>
+            <div className="header-content"><span className="header-kicker">CANDIDATE PROFILE</span><h3>Mrinmoy Kumar Maity</h3><p>AI Engineer / Software Engineer</p></div>
           </div>
           <div className="header-actions">
             <label className="language-picker">
