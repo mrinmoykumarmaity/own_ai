@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import json
 import logging
 import re
@@ -8,15 +7,15 @@ from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
 from threading import RLock
-from typing import Iterator, TypeVar
-
+from typing import AsyncIterator, TypeVar
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
-from groq import Groq
+from groq import AsyncGroq
 from pydantic import BaseModel, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pypdf import PdfReader
+from starlette.concurrency import run_in_threadpool
 
 from models import (
     CandidateProfile,
@@ -38,6 +37,7 @@ logging.basicConfig(
 logger = logging.getLogger("candidate_ai")
 
 BASE_DIR = Path(__file__).resolve().parent
+DEFAULT_RESUME_PATH = BASE_DIR / "my_resume_new.pdf"
 
 
 class Settings(BaseSettings):
@@ -53,8 +53,11 @@ class Settings(BaseSettings):
     public_base_url: str = "http://127.0.0.1:8000"
     max_upload_mb: int = 8
     max_resume_chars: int = 25_000
-    max_history_messages: int = 16
-    max_completion_tokens: int = 900
+    max_history_messages: int = 8
+    max_history_chars: int = 12_000
+    max_completion_tokens: int = 700
+    groq_timeout_seconds: float = 45.0
+    groq_max_retries: int = 1
 
     @property
     def cors_origin_list(self) -> list[str]:
@@ -115,51 +118,76 @@ class ResumeStore:
 
     def __init__(self, profile: CandidateProfile) -> None:
         self._lock = RLock()
-        self._profile_text = profile.model_dump_json(indent=2)
+        # Compact JSON cuts prompt size without removing useful profile fields.
+        self._profile_text = profile.model_dump_json(
+            exclude_none=True,
+            exclude_defaults=True,
+        )
         self._resume_text = ""
         self._original_filename = "my_resume_new.pdf"
+        self._context_text = self._build_context("")
+        self._revision = 0
+
+    def _build_context(self, resume_text: str) -> str:
+        profile_section = f"STRUCTURED CANDIDATE PROFILE:\n{self._profile_text}"
+        if not resume_text:
+            return profile_section
+        return (
+            f"{profile_section}\n\n"
+            "CURRENT RESUME TEXT (prefer this when details conflict):\n"
+            f"{resume_text}"
+        )
 
     def load_existing(self) -> None:
-        if settings.active_resume_path.exists():
-            try:
-                text = extract_text_from_pdf(settings.active_resume_path.read_bytes())
-                self.set_resume(text, "my_resume_new.pdf")
-            except HTTPException:
-                logger.exception("Could not load the existing resume PDF")
+        resume_path = (
+            settings.active_resume_path
+            if settings.active_resume_path.exists()
+            else DEFAULT_RESUME_PATH
+        )
+        if not resume_path.exists():
+            return
+
+        try:
+            text = extract_text_from_pdf(resume_path.read_bytes())
+            self.set_resume(text, resume_path.name)
+        except (HTTPException, OSError):
+            logger.exception("Could not load the existing resume PDF")
 
     def set_resume(self, text: str, original_filename: str) -> None:
         with self._lock:
             self._resume_text = text[: settings.max_resume_chars]
             self._original_filename = original_filename
+            self._context_text = self._build_context(self._resume_text)
+            self._revision += 1
 
     def context(self) -> str:
         with self._lock:
-            uploaded = self._resume_text
-        if uploaded:
-            return (
-                "STRUCTURED CANDIDATE PROFILE:\n"
-                f"{self._profile_text}\n\n"
-                "CURRENT UPLOADED RESUME TEXT (prefer this when details conflict):\n"
-                f"{uploaded}"
-            )
-        return f"STRUCTURED CANDIDATE PROFILE:\n{self._profile_text}"
+            return self._context_text
+
+    def revision(self) -> int:
+        with self._lock:
+            return self._revision
 
     def filename(self) -> str:
         with self._lock:
             return self._original_filename
 
     def has_pdf(self) -> bool:
-        return settings.active_resume_path.exists()
+        return settings.active_resume_path.exists() or DEFAULT_RESUME_PATH.exists()
 
 
 resume_store = ResumeStore(candidate)
 
 
 @lru_cache
-def get_groq_client() -> Groq:
+def get_groq_client() -> AsyncGroq:
     if not settings.groq_api_key:
         raise HTTPException(status_code=503, detail="GROQ_API_KEY is missing from backend/.env.")
-    return Groq(api_key=settings.groq_api_key)
+    return AsyncGroq(
+        api_key=settings.groq_api_key,
+        timeout=settings.groq_timeout_seconds,
+        max_retries=settings.groq_max_retries,
+    )
 
 
 LANGUAGE_NAMES = {
@@ -173,7 +201,10 @@ def language_instruction(code: str) -> str:
     return f"Write the complete answer in {LANGUAGE_NAMES.get(code, 'English')}."
 
 
-def resume_grounding_rules(language: str) -> str:
+@lru_cache(maxsize=12)
+def _cached_grounding_rules(language: str, resume_revision: int) -> str:
+    # resume_revision is part of the cache key, so uploads get fresh context.
+    del resume_revision
     return f"""You are the official AI representative of {candidate.name}.
 
 Use only the candidate information supplied below. Never invent experience,
@@ -185,21 +216,42 @@ Keep answers professional, specific, and concise. {language_instruction(language
 """
 
 
-def stream_answer(request: QuestionRequest) -> Iterator[str]:
+def resume_grounding_rules(language: str) -> str:
+    return _cached_grounding_rules(language, resume_store.revision())
+
+
+def bounded_history(request: QuestionRequest) -> list[dict[str, str]]:
+    """Keep recent history inside both message and character budgets."""
+    selected: list[dict[str, str]] = []
+    remaining_chars = settings.max_history_chars
+
+    for message in reversed(request.history[-settings.max_history_messages :]):
+        content = message.content.strip()
+        if not content or remaining_chars <= 0:
+            continue
+
+        content = content[:remaining_chars]
+        selected.append({"role": message.role, "content": content})
+        remaining_chars -= len(content)
+
+    selected.reverse()
+    return selected
+
+
+async def stream_answer(request: QuestionRequest) -> AsyncIterator[str]:
     messages = [{"role": "system", "content": resume_grounding_rules(request.language)}]
-    for message in request.history[-settings.max_history_messages :]:
-        messages.append({"role": message.role, "content": message.content})
+    messages.extend(bounded_history(request))
     messages.append({"role": "user", "content": request.question})
 
     try:
-        response = get_groq_client().chat.completions.create(
+        response = await get_groq_client().chat.completions.create(
             model=settings.groq_model,
             messages=messages,
             temperature=0.15,
             max_completion_tokens=settings.max_completion_tokens,
             stream=True,
         )
-        for chunk in response:
+        async for chunk in response:
             content = chunk.choices[0].delta.content
             if content:
                 yield content
@@ -222,7 +274,11 @@ def strip_json_fences(raw: str) -> str:
 ResultModel = TypeVar("ResultModel", bound=BaseModel)
 
 
-def request_json(system_prompt: str, user_prompt: str, model: type[ResultModel]) -> ResultModel:
+async def request_json(
+    system_prompt: str,
+    user_prompt: str,
+    model: type[ResultModel],
+) -> ResultModel:
     client = get_groq_client()
     raw_content = ""
 
@@ -232,7 +288,7 @@ def request_json(system_prompt: str, user_prompt: str, model: type[ResultModel])
             repair_note = "\nReturn valid JSON only. Do not use markdown or add extra keys."
 
         try:
-            response = client.chat.completions.create(
+            response = await client.chat.completions.create(
                 model=settings.groq_model,
                 messages=[
                     {"role": "system", "content": system_prompt + repair_note},
@@ -255,9 +311,9 @@ def request_json(system_prompt: str, user_prompt: str, model: type[ResultModel])
     raise HTTPException(status_code=502, detail="The AI returned an invalid response. Please retry.")
 
 
-def request_text(system_prompt: str, user_prompt: str) -> str:
+async def request_text(system_prompt: str, user_prompt: str) -> str:
     try:
-        response = get_groq_client().chat.completions.create(
+        response = await get_groq_client().chat.completions.create(
             model=settings.groq_model,
             messages=[
                 {"role": "system", "content": system_prompt},
@@ -278,9 +334,12 @@ def request_text(system_prompt: str, user_prompt: str) -> str:
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     settings.data_dir.mkdir(parents=True, exist_ok=True)
-    resume_store.load_existing()
+    await run_in_threadpool(resume_store.load_existing)
     if not settings.groq_api_key:
         logger.warning("GROQ_API_KEY is not configured")
+    else:
+        # Build the reusable HTTP client during startup, not on the first chat.
+        get_groq_client()
     logger.info("Candidate AI backend is ready")
     yield
 
@@ -294,14 +353,14 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origin_list,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def home():
     return {
         "message": "Candidate AI Pro backend is running",
@@ -342,9 +401,9 @@ async def upload_resume(file: UploadFile = File(...)):
             detail=f"Resume must be smaller than {settings.max_upload_mb} MB.",
         )
 
-    text = extract_text_from_pdf(file_bytes)
+    text = await run_in_threadpool(extract_text_from_pdf, file_bytes)
     settings.data_dir.mkdir(parents=True, exist_ok=True)
-    settings.active_resume_path.write_bytes(file_bytes)
+    await run_in_threadpool(settings.active_resume_path.write_bytes, file_bytes)
     resume_store.set_resume(text, Path(filename).name)
 
     return ResumeUploadResult(
@@ -357,7 +416,6 @@ async def upload_resume(file: UploadFile = File(...)):
 @app.get("/resume")
 def download_resume():
     uploaded_resume = settings.active_resume_path
-    default_resume = BASE_DIR / "my_resume_new.pdf"
 
     if uploaded_resume.exists():
         return FileResponse(
@@ -366,9 +424,9 @@ def download_resume():
             filename=resume_store.filename() or "uploaded_resume.pdf",
         )
 
-    if default_resume.exists():
+    if DEFAULT_RESUME_PATH.exists():
         return FileResponse(
-            default_resume,
+            DEFAULT_RESUME_PATH,
             media_type="application/pdf",
             filename="Mrinmoy_Kumar_Maity_Resume.pdf",
         )
@@ -385,13 +443,12 @@ RESUME_REQUEST_PATTERN = re.compile(
 
 
 @app.post("/ask")
-def ask_candidate(request: QuestionRequest):
+async def ask_candidate(request: QuestionRequest):
     # Resume-related question
     if RESUME_REQUEST_PATTERN.search(request.question):
         uploaded_resume = settings.active_resume_path
-        default_resume = BASE_DIR / "my_resume_new.pdf"
 
-        if not uploaded_resume.exists() and not default_resume.exists():
+        if not uploaded_resume.exists() and not DEFAULT_RESUME_PATH.exists():
             message = (
                 "The candidate's resume PDF is currently unavailable."
             )
@@ -430,7 +487,7 @@ def ask_candidate(request: QuestionRequest):
     )
 
 @app.post("/interview-questions", response_model=InterviewQuestionResult)
-def generate_interview_questions(request: InterviewQuestionRequest):
+async def generate_interview_questions(request: InterviewQuestionRequest):
     system_prompt = f"""You are a technical interviewer. Use only the supplied
 candidate information. Create questions that test claims actually present in
 the resume, plus role-relevant fundamentals. Do not invent candidate details.
@@ -442,7 +499,7 @@ Return exactly {request.count} questions.
 
 {resume_store.context()}
 """
-    return request_json(
+    return await request_json(
         system_prompt,
         f"Create interview questions for the role: {request.job_role}",
         InterviewQuestionResult,
@@ -450,7 +507,7 @@ Return exactly {request.count} questions.
 
 
 @app.post("/match", response_model=JobMatchResult)
-def match_job_description(request: JobDescriptionRequest):
+async def match_job_description(request: JobDescriptionRequest):
     system_prompt = f"""You are a strict recruiter evaluating one candidate
 against one job description. Use only the supplied candidate information.
 Never inflate the score or assume unlisted skills. Score required-skill overlap,
@@ -469,7 +526,7 @@ Return exactly this JSON shape:
 
 {resume_store.context()}
 """
-    return request_json(
+    return await request_json(
         system_prompt,
         f"JOB DESCRIPTION:\n\n{request.job_description}",
         JobMatchResult,
@@ -477,7 +534,7 @@ Return exactly this JSON shape:
 
 
 @app.post("/why-hire", response_model=TextAnswer)
-def why_hire(request: WhyHireRequest):
+async def why_hire(request: WhyHireRequest):
     system_prompt = f"""You are writing an honest recruiter-facing answer to
 the question: Why should we hire this candidate? Use only the supplied candidate
 information. Write one strong paragraph of 100 to 150 words. Mention concrete
@@ -488,5 +545,4 @@ skills or projects and avoid unsupported claims. {language_instruction(request.l
     user_prompt = "Explain why this candidate should be hired."
     if request.job_description.strip():
         user_prompt += f" Tailor it to this job description:\n{request.job_description.strip()}"
-    return TextAnswer(answer=request_text(system_prompt, user_prompt))
-
+    return TextAnswer(answer=await request_text(system_prompt, user_prompt))
