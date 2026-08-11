@@ -5,7 +5,6 @@ const API_BASE = (
 ).replace(/\/$/, "");
 const API_URL = `${API_BASE}/ask`;
 const RESUME_URL = `${API_BASE}/resume`;
-const STORAGE_KEY = "candidate_chat_history_v3";
 const THEME_KEY = "candidate_ai_theme";
 
 const languages = {
@@ -104,18 +103,6 @@ function createChat() {
   return { id: crypto.randomUUID(), title: "New conversation", messages: [] };
 }
 
-function loadChats() {
-  try {
-    const savedChats = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    const valid = Array.isArray(savedChats) && savedChats.length > 0 &&
-      savedChats.every((chat) => chat?.id && Array.isArray(chat.messages));
-    if (valid) return savedChats;
-  } catch (error) {
-    console.error("Unable to load chat history:", error);
-  }
-  return [createChat()];
-}
-
 function getInitialTheme() {
   try {
     const savedTheme = localStorage.getItem(THEME_KEY);
@@ -158,7 +145,9 @@ function MatchResult({ result }) {
 }
 
 export default function App() {
-  const [chats, setChats] = useState(loadChats);
+  // Chat history is intentionally memory-only. Every reload starts a fresh
+  // visitor session, while New Chat still works during the current visit.
+  const [chats, setChats] = useState(() => [createChat()]);
   const [activeChatId, setActiveChatId] = useState(chats[0].id);
   const [question, setQuestion] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -182,14 +171,6 @@ export default function App() {
 
   const activeChat = chats.find((chat) => chat.id === activeChatId) || chats[0];
   const text = copy[language];
-
-  useEffect(() => {
-    const saveTimer = window.setTimeout(() => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
-    }, 250);
-
-    return () => window.clearTimeout(saveTimer);
-  }, [chats]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
