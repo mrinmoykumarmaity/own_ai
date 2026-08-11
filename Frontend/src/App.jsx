@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 
-const API_BASE = "https://own-ai-cjoq.onrender.com";
+const API_BASE = (
+  import.meta.env.VITE_API_URL || "https://own-ai-cjoq.onrender.com"
+).replace(/\/$/, "");
 const API_URL = `${API_BASE}/ask`;
 const RESUME_URL = `${API_BASE}/resume`;
 const STORAGE_KEY = "candidate_chat_history_v3";
@@ -174,12 +176,19 @@ export default function App() {
   const uploadRef = useRef(null);
   const recognitionRef = useRef(null);
   const messagesRef = useRef(null);
+  const modalRef = useRef(null);
+  const modalTriggerRef = useRef(null);
+  const abortControllerRef = useRef(null);
 
   const activeChat = chats.find((chat) => chat.id === activeChatId) || chats[0];
   const text = copy[language];
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+    const saveTimer = window.setTimeout(() => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+    }, 250);
+
+    return () => window.clearTimeout(saveTimer);
   }, [chats]);
 
   useEffect(() => {
@@ -188,14 +197,68 @@ export default function App() {
     localStorage.setItem(THEME_KEY, theme);
 
     const themeMeta = document.querySelector('meta[name="theme-color"]');
-    themeMeta?.setAttribute("content", theme === "dark" ? "#191a1f" : "#eef2f8");
+    themeMeta?.setAttribute("content", theme === "dark" ? "#0d1117" : "#f5f7fa");
   }, [theme]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [activeChat?.messages]);
+    bottomRef.current?.scrollIntoView({ behavior: isStreaming ? "auto" : "smooth" });
+  }, [activeChat?.messages, isStreaming]);
 
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
+
+  useEffect(() => {
+    if (!sidebarOpen) return undefined;
+
+    function closeSidebarOnEscape(event) {
+      if (event.key === "Escape") setSidebarOpen(false);
+    }
+
+    document.addEventListener("keydown", closeSidebarOnEscape);
+    return () => document.removeEventListener("keydown", closeSidebarOnEscape);
+  }, [sidebarOpen]);
+
+  useEffect(() => {
+    if (!panel || !modalRef.current) return undefined;
+
+    const dialog = modalRef.current;
+    const selector =
+      'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href]';
+    const focusable = [...dialog.querySelectorAll(selector)];
+    (focusable[0] || dialog).focus();
+
+    function handleDialogKeys(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closePanel();
+        return;
+      }
+
+      if (event.key !== "Tab" || focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleDialogKeys);
+    return () => document.removeEventListener("keydown", handleDialogKeys);
+  }, [panel]);
+
+  function openPanel(nextPanel) {
+    modalTriggerRef.current = document.activeElement;
+    setPanel(nextPanel);
+  }
+
+  function closePanel() {
+    setPanel(null);
+    window.requestAnimationFrame(() => modalTriggerRef.current?.focus());
+  }
 
   function startNewChat() {
     const chat = createChat();
@@ -288,6 +351,8 @@ export default function App() {
     setQuestion("");
     setIsStreaming(true);
     setNotice("");
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
     setChats((current) => current.map((chat) => chat.id === currentChatId ? {
       ...chat,
       title: chat.messages.length === 0 ? finalQuestion.slice(0, 35) : chat.title,
@@ -299,6 +364,7 @@ export default function App() {
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({ question: finalQuestion, history, language }),
       });
       if (!response.ok) throw new Error(await responseError(response, "Backend returned an error."));
@@ -319,16 +385,21 @@ export default function App() {
       }
       if (autoSpeak && completeAnswer) speak(completeAnswer);
     } catch (error) {
-      const message = error instanceof TypeError
-        ? "The AI service is taking longer than expected. Please retry in a moment."
-        : error.message;
+      const message = error.name === "AbortError"
+        ? "Response stopped."
+        : error instanceof TypeError
+          ? "The AI service is taking longer than expected. Please retry in a moment."
+          : error.message;
       setChats((current) => current.map((chat) => chat.id === currentChatId ? {
         ...chat,
         messages: chat.messages.map((item) =>
-          item.id === assistantMessage.id ? { ...item, content: message, error: true } : item,
+          item.id === assistantMessage.id
+            ? { ...item, content: message, error: error.name !== "AbortError" }
+            : item,
         ),
       } : chat));
     } finally {
+      abortControllerRef.current = null;
       setIsStreaming(false);
     }
   }
@@ -370,7 +441,7 @@ export default function App() {
         `${index + 1}. ${item.question}\n   Focus: ${item.focus}`,
       ).join("\n\n");
       appendAssistant(`${result.role} Interview Questions\n\n${content}`);
-      setPanel(null);
+      closePanel();
     } catch (error) {
       setNotice(error.message);
     } finally {
@@ -394,7 +465,7 @@ export default function App() {
       if (!response.ok) throw new Error(await responseError(response, "Match analysis failed."));
       const result = await response.json();
       appendAssistant(result.verdict, { match: result });
-      setPanel(null);
+      closePanel();
     } catch (error) {
       setNotice(error.message);
     } finally {
@@ -415,7 +486,7 @@ export default function App() {
       const result = await response.json();
       appendAssistant(result.answer);
       if (autoSpeak) speak(result.answer);
-      setPanel(null);
+      closePanel();
     } catch (error) {
       setNotice(error.message);
     } finally {
@@ -469,10 +540,12 @@ export default function App() {
   }
 
   return (
-    <main className="app">
+    <>
+      <a className="skip-link" href="#main-content">Skip to main content</a>
+      <div className="app">
       {sidebarOpen && <button className="overlay" aria-label="Close sidebar" onClick={() => setSidebarOpen(false)} />}
 
-      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
+      <aside id="app-sidebar" className={`sidebar ${sidebarOpen ? "open" : ""}`} aria-label="Candidate navigation">
         <div className="sidebar-top">
           <div className="mac-traffic-lights" aria-hidden="true">
             <span className="mac-dot mac-dot-close" />
@@ -494,9 +567,9 @@ export default function App() {
           <div className="sidebar-label"><span>Recruiter tools</span><span className="section-count">6</span></div>
           <div className="feature-tools">
             <button onClick={() => uploadRef.current?.click()}><span className="tool-icon"><Icon name="upload" /></span><span className="tool-copy"><b>{text.upload}</b><small>Switch the active profile</small></span><Icon name="chevron" size={15} /></button>
-            <button onClick={() => setPanel("interview")}><span className="tool-icon"><Icon name="interview" /></span><span className="tool-copy"><b>{text.interview}</b><small>Generate role-specific prompts</small></span><Icon name="chevron" size={15} /></button>
-            <button onClick={() => setPanel("match")}><span className="tool-icon"><Icon name="target" /></span><span className="tool-copy"><b>{text.match}</b><small>Compare resume and job</small></span><Icon name="chevron" size={15} /></button>
-            <button onClick={() => setPanel("hire")}><span className="tool-icon"><Icon name="sparkles" /></span><span className="tool-copy"><b>{text.hire}</b><small>Create a recruiter summary</small></span><Icon name="chevron" size={15} /></button>
+            <button onClick={() => openPanel("interview")}><span className="tool-icon"><Icon name="interview" /></span><span className="tool-copy"><b>{text.interview}</b><small>Generate role-specific prompts</small></span><Icon name="chevron" size={15} /></button>
+            <button onClick={() => openPanel("match")}><span className="tool-icon"><Icon name="target" /></span><span className="tool-copy"><b>{text.match}</b><small>Compare resume and job</small></span><Icon name="chevron" size={15} /></button>
+            <button onClick={() => openPanel("hire")}><span className="tool-icon"><Icon name="sparkles" /></span><span className="tool-copy"><b>{text.hire}</b><small>Create a recruiter summary</small></span><Icon name="chevron" size={15} /></button>
             <button onClick={exportChatPdf}><span className="tool-icon"><Icon name="download" /></span><span className="tool-copy"><b>{text.export}</b><small>Save this conversation</small></span><Icon name="chevron" size={15} /></button>
             <a href={RESUME_URL} target="_blank" rel="noreferrer"><span className="tool-icon"><Icon name="file" /></span><span className="tool-copy"><b>Download resume</b><small>Open the current PDF</small></span><Icon name="external" size={15} /></a>
           </div>
@@ -504,11 +577,17 @@ export default function App() {
           <div className="sidebar-label history-label"><span>Recent conversations</span><span className="section-count">{chats.length}</span></div>
           <div className="history-list">
             {chats.map((chat) => (
-              <button key={chat.id} className={`history-item ${chat.id === activeChatId ? "active" : ""}`} onClick={() => selectChat(chat.id)}>
-                <span className="chat-symbol"><Icon name="message" size={16} /></span>
-                <span className="chat-title">{chat.title}</span>
-                <span className="delete-chat" role="button" tabIndex="0" aria-label="Delete conversation" title="Delete conversation" onClick={(event) => deleteChat(event, chat.id)}><Icon name="trash" size={14} /></span>
-              </button>
+              <div key={chat.id} className={`history-item ${chat.id === activeChatId ? "active" : ""}`}>
+                <button
+                  className="history-select"
+                  aria-current={chat.id === activeChatId ? "true" : undefined}
+                  onClick={() => selectChat(chat.id)}
+                >
+                  <span className="chat-symbol"><Icon name="message" size={16} /></span>
+                  <span className="chat-title">{chat.title}</span>
+                </button>
+                <button className="delete-chat" type="button" aria-label={`Delete ${chat.title}`} title="Delete conversation" onClick={(event) => deleteChat(event, chat.id)}><Icon name="trash" size={14} /></button>
+              </div>
             ))}
           </div>
         </div>
@@ -522,10 +601,10 @@ export default function App() {
         </div>
       </aside>
 
-      <section className="chat-section">
+      <main id="main-content" className="chat-section">
         <header className="header">
           <div className="header-left">
-            <button className="menu-button" aria-label="Open sidebar" onClick={() => setSidebarOpen(true)}><Icon name="menu" size={20} /></button>
+            <button className="menu-button" type="button" aria-label="Open sidebar" aria-controls="app-sidebar" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(true)}><Icon name="menu" size={20} /></button>
             <div className="header-avatar">M<span /></div>
             <div className="header-content"><span className="header-kicker">CANDIDATE PROFILE</span><h3>Mrinmoy Kumar Maity</h3><p>AI Engineer / Software Engineer</p></div>
           </div>
@@ -554,7 +633,7 @@ export default function App() {
           </div>
         </header>
 
-        {notice && <button className="notice" onClick={() => setNotice("")}><span className="notice-icon"><Icon name="check" size={15} /></span><span>{notice}</span><Icon name="close" size={15} /></button>}
+        {notice && <div className="notice" role="status" aria-live="polite"><span className="notice-icon"><Icon name="check" size={15} /></span><span>{notice}</span><button type="button" aria-label="Dismiss notification" onClick={() => setNotice("")}><Icon name="close" size={15} /></button></div>}
 
         <div className="chat-window">
           {activeChat.messages.length === 0 ? (
@@ -575,7 +654,7 @@ export default function App() {
               <div className="trust-row"><span><Icon name="shield" size={14} /> Verified resume data</span><span><Icon name="language" size={14} /> English · Hindi · Bengali</span></div>
             </section>
           ) : (
-            <div className="messages" ref={messagesRef}>
+            <div className="messages" ref={messagesRef} role="log" aria-live="polite" aria-relevant="additions text">
               {activeChat.messages.map((message) => (
                 <article key={message.id} className={`message ${message.role}`}>
                   <div className="message-avatar">{message.role === "assistant" ? "M" : <Icon name="user" size={15} />}</div>
@@ -601,37 +680,55 @@ export default function App() {
           <div className="composer-shell">
             <div className="composer-label"><span><Icon name="sparkles" size={13} /> Ask Candidate AI</span><small>Press Enter to send</small></div>
             <div className="input-box">
-              <textarea rows="1" value={question} placeholder={text.placeholder} disabled={isStreaming} onChange={(event) => setQuestion(event.target.value)} onInput={(event) => {
+              <textarea aria-label="Message Candidate AI" rows="1" value={question} placeholder={text.placeholder} disabled={isStreaming} onChange={(event) => setQuestion(event.target.value)} onInput={(event) => {
                 event.currentTarget.style.height = "auto";
                 event.currentTarget.style.height = `${Math.min(event.currentTarget.scrollHeight, 140)}px`;
               }} onKeyDown={handleKeyDown} />
               <div className="composer-actions">
                 <button className={`voice-button ${listening ? "listening" : ""}`} aria-label="Voice input" title="Voice input" onClick={toggleVoiceInput}><Icon name={listening ? "stop" : "mic"} size={17} /></button>
-                <button className="send-button" aria-label="Send message" disabled={!question.trim() || isStreaming} onClick={() => sendMessage()}><Icon name={isStreaming ? "stop" : "send"} size={17} /></button>
+                <button
+                  className="send-button"
+                  type="button"
+                  aria-label={isStreaming ? "Stop response" : "Send message"}
+                  disabled={isStreaming ? !abortControllerRef.current : !question.trim()}
+                  onClick={() => isStreaming ? abortControllerRef.current?.abort() : sendMessage()}
+                >
+                  <Icon name={isStreaming ? "stop" : "send"} size={17} />
+                </button>
               </div>
             </div>
           </div>
           <p className="disclaimer"><Icon name="shield" size={12} /> Responses are generated only from the active candidate resume and profile.</p>
         </footer>
-      </section>
+      </main>
 
       {panel && (
-        <div className="modal-overlay" onMouseDown={() => setPanel(null)}>
-          <section className="feature-modal" onMouseDown={(event) => event.stopPropagation()}>
-            <button className="modal-close" aria-label="Close dialog" onClick={() => setPanel(null)}><Icon name="close" size={18} /></button>
+        <div className="modal-overlay" onMouseDown={closePanel}>
+          <section
+            ref={modalRef}
+            className="feature-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="feature-modal-title"
+            tabIndex="-1"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <button className="modal-close" type="button" aria-label="Close dialog" onClick={closePanel}><Icon name="close" size={18} /></button>
             {panel === "interview" && <>
-              <div className="modal-heading"><div className="modal-icon"><Icon name="interview" size={22} /></div><div><span>INTERVIEW PREP</span><h2>{text.interview}</h2></div></div><p>Create technical, project and behavioral questions grounded in the active resume.</p>
-              <label>{text.jobRole}</label><input value={jobRole} onChange={(event) => setJobRole(event.target.value)} />
+              <div className="modal-heading"><div className="modal-icon"><Icon name="interview" size={22} /></div><div><span>INTERVIEW PREP</span><h2 id="feature-modal-title">{text.interview}</h2></div></div><p>Create technical, project and behavioral questions grounded in the active resume.</p>
+              <label htmlFor="target-role">{text.jobRole}</label><input id="target-role" value={jobRole} onChange={(event) => setJobRole(event.target.value)} />
               <button className="modal-action" disabled={isStreaming} onClick={generateInterviewQuestions}><Icon name="sparkles" size={16} /> {text.generate}</button>
             </>}
             {panel === "match" && <>
-              <div className="modal-heading"><div className="modal-icon"><Icon name="target" size={22} /></div><div><span>ROLE ALIGNMENT</span><h2>{text.match}</h2></div></div><p>Compare the active resume with a pasted job description and identify evidence-backed strengths and gaps.</p>
-              <textarea className="jd-input" value={jobDescription} onChange={(event) => setJobDescription(event.target.value)} placeholder={text.jobDescription} />
+              <div className="modal-heading"><div className="modal-icon"><Icon name="target" size={22} /></div><div><span>ROLE ALIGNMENT</span><h2 id="feature-modal-title">{text.match}</h2></div></div><p>Compare the active resume with a pasted job description and identify evidence-backed strengths and gaps.</p>
+              <label className="sr-only" htmlFor="match-job-description">Job description</label>
+              <textarea id="match-job-description" className="jd-input" value={jobDescription} onChange={(event) => setJobDescription(event.target.value)} placeholder={text.jobDescription} />
               <button className="modal-action" disabled={isStreaming} onClick={analyzeMatch}><Icon name="target" size={16} /> {text.analyze}</button>
             </>}
             {panel === "hire" && <>
-              <div className="modal-heading"><div className="modal-icon"><Icon name="sparkles" size={22} /></div><div><span>RECRUITER SUMMARY</span><h2>{text.hire}</h2></div></div><p>Create an honest candidate summary. Add a job description for a role-specific answer.</p>
-              <textarea className="jd-input" value={jobDescription} onChange={(event) => setJobDescription(event.target.value)} placeholder={`${text.jobDescription} (optional)`} />
+              <div className="modal-heading"><div className="modal-icon"><Icon name="sparkles" size={22} /></div><div><span>RECRUITER SUMMARY</span><h2 id="feature-modal-title">{text.hire}</h2></div></div><p>Create an honest candidate summary. Add a job description for a role-specific answer.</p>
+              <label className="sr-only" htmlFor="hire-job-description">Optional job description</label>
+              <textarea id="hire-job-description" className="jd-input" value={jobDescription} onChange={(event) => setJobDescription(event.target.value)} placeholder={`${text.jobDescription} (optional)`} />
               <button className="modal-action" disabled={isStreaming} onClick={generateWhyHire}><Icon name="sparkles" size={16} /> {text.generate}</button>
             </>}
           </section>
@@ -639,6 +736,7 @@ export default function App() {
       )}
 
       <input ref={uploadRef} type="file" accept="application/pdf,.pdf" hidden onChange={uploadResume} />
-    </main>
+      </div>
+    </>
   );
 }
