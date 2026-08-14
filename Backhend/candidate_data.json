@@ -1,159 +1,231 @@
 {
   "name": "Mrinmoy Kumar Maity",
-  "title": "Junior AI/ML Engineer | Generative AI and Python Developer",
-  "location": "West Bengal, India",
+  "title": "Junior AI/ML Engineer",
+  "headline": "Junior AI/ML Engineer | Generative AI & Python Developer",
+  "location": "Kolkata, West Bengal, India",
   "email": "maitymrinmoy65@gmail.com",
   "phone": "+91 8927469163",
-  "summary": "Entry-level AI/ML Engineer with hands-on experience building practical applications using Python, machine learning, generative AI, large language models, retrieval-augmented generation, and REST APIs. Experienced in developing resume-screening systems, semantic-search applications, vector databases, and resume-grounded AI assistants using FastAPI, Flask, Pydantic, Groq API, Ollama, React, and LangGraph. Strong foundation in prompt engineering, structured LLM outputs, data analysis, and full-stack AI application development. Interested in contributing to AI engineering, generative AI, intelligent automation, and machine learning projects.",
-  "education": [
-    {
-      "institution": "Kharagpur College",
-      "degree": "Bachelor of Computer Applications (BCA), Computer Science",
-      "start_year": 2023,
-      "end_year": 2027,
-      "cgpa": 7.65
-    },
-    {
-      "institution": "Jhargram Kumud Kumari Institution",
-      "degree": "Higher Secondary Education (Class XII), Computer and Information Sciences",
-      "start_year": 2021,
-      "end_year": 2023,
-      "cgpa": 6.69
-    }
-  ],
+  "summary": "Entry-level AI/ML Engineer with hands-on experience building Python applications using large language models, retrieval-augmented generation, LangChain, LangGraph, Pydantic, Flask, and FastAPI. Developed resume screening, semantic search, and network traffic analysis systems with structured outputs, vector retrieval, local embeddings, and REST API integration. Strong foundation in Python, SQL, machine learning, networking, and data analysis, with a focus on reliable and practical AI solutions.",
+  "professional_summary": "Entry-level AI/ML Engineer with hands-on experience building Python applications using large language models, retrieval-augmented generation, LangChain, LangGraph, Pydantic, Flask, and FastAPI. Developed resume screening, semantic search, and network traffic analysis systems with structured outputs, vector retrieval, local embeddings, and REST API integration. Strong foundation in Python, SQL, machine learning, networking, and data analysis, with a focus on reliable and practical AI solutions.",
   "skills": {
     "programming_languages": [
       "Python",
-      "SQL",
-      "JavaScript"
+      "SQL"
     ],
     "ai_ml": [
       "Machine Learning",
       "Generative AI",
       "Large Language Models",
-      "Retrieval-Augmented Generation",
       "Prompt Engineering",
-      "Semantic Search",
-      "Vector Databases",
-      "LangGraph",
+      "Retrieval-Augmented Generation",
       "AI Agents",
-      "Structured LLM Output"
+      "Vector Databases",
+      "Semantic Search",
+      "Ollama"
     ],
-    "frameworks_libraries": [
-      "FastAPI",
-      "Flask",
-      "Pydantic",
-      "Scikit-learn",
+    "libraries": [
       "LangChain",
-      "React",
-      "Vite",
-      "Streamlit"
-    ],
-    "data_analytics": [
+      "LangGraph",
+      "Scikit-learn",
       "Pandas",
       "NumPy",
-      "Matplotlib",
-      "Power BI",
-      "Tableau",
-      "Excel",
-      "Exploratory Data Analysis",
-      "Data Cleaning"
+      "Pydantic"
     ],
-    "tools_platforms": [
+    "frameworks": [
+      "FastAPI",
+      "Flask",
+      "Streamlit",
+      "React",
+      "Vite"
+    ],
+    "data_analytics": [
+      "Power BI",
+      "Excel",
+      "Matplotlib",
+      "Exploratory Data Analysis",
+      "Data Cleaning",
+      "Tableau"
+    ],
+    "networking_security": [
+      "Deep Packet Inspection",
+      "TCP/IP",
+      "PCAP Analysis",
+      "TLS",
+      "HTTP",
+      "DNS",
+      "Wireshark"
+    ],
+    "tools": [
+      "REST APIs",
       "Git",
       "GitHub",
-      "VS Code",
-      "Groq API",
-      "Ollama",
-      "REST APIs",
-      "Render",
-      "Vercel"
+      "MySQL",
+      "Groq API"
     ]
   },
+  "experience": [
+    {
+      "role": "Data Analytics Virtual Experience Program",
+      "organization": "Deloitte Australia through Forage",
+      "location": "Remote",
+      "start_date": "May 2025",
+      "end_date": "July 2025",
+      "duration": "May 2025 - July 2025",
+      "description": "Analyzed business and forensic datasets to identify patterns, inconsistencies, and actionable insights. Developed an interactive Tableau dashboard and used Excel to classify data, perform analysis, and communicate conclusions through a structured business report.",
+      "highlights": [
+        "Analyzed business and forensic datasets to identify patterns, inconsistencies, and actionable insights.",
+        "Developed an interactive Tableau dashboard to visualize key findings and support business decisions.",
+        "Used Excel to classify data, perform analysis, and communicate conclusions through a structured business report."
+      ]
+    }
+  ],
   "projects": [
     {
+      "name": "Deep Packet Inspection and Network Traffic Analyzer",
+      "duration": "August 2026 - Present",
+      "description": "A Python-based Deep Packet Inspection and network traffic analysis system for offline PCAP files. It parses Ethernet, VLAN, IPv4, TCP, and UDP traffic; extracts domains from TLS SNI, HTTP Host headers, and DNS queries; tracks bidirectional flows; classifies applications; filters traffic; and generates PCAP and JSON reports.",
+      "technologies": [
+        "Python",
+        "TCP/IP",
+        "PCAP",
+        "TLS",
+        "HTTP",
+        "DNS",
+        "Wireshark",
+        "JSON",
+        "Git",
+        "GitHub"
+      ],
+      "highlights": [
+        "Reimplemented and enhanced a C++ Deep Packet Inspection engine in Python.",
+        "Implemented bidirectional flow tracking, application classification, and IP-, application-, and domain-based traffic filtering.",
+        "Generated filtered PCAP files and structured JSON reports with robust error handling and automated tests.",
+        "Successfully analyzed a 77-packet test capture with zero parsing errors."
+      ],
+      "github_url": "https://github.com/mrinmoykumarmaity/-python-dpi-packet-analyzer"
+    },
+    {
       "name": "Candidate AI Representative",
-      "description": "Built and deployed a full-stack, resume-grounded AI assistant that enables recruiters to ask questions about a candidate using the active resume and structured profile data. Implemented streaming AI responses, PDF resume upload and download, interview-question generation, job-description suitability scoring, recruiter summaries, multilingual support, speech-to-text, text-to-speech, conversation history, and PDF chat export. Deployed the React frontend on Vercel and the FastAPI backend on Render.",
+      "duration": "August 2026",
+      "description": "A deployed full-stack, resume-grounded AI assistant that provides streaming answers using an active candidate resume and structured profile data. It supports resume upload and download, text extraction, interview question generation, job-description suitability scoring, why-hire responses, multilingual interaction, voice input and output, conversation history, and PDF chat export.",
       "technologies": [
         "Python",
         "FastAPI",
         "React",
         "Vite",
         "Groq API",
-        "Pydantic",
-        "JavaScript",
-        "REST API",
-        "Render",
-        "Vercel"
+        "Pydantic"
       ],
+      "highlights": [
+        "Built a full-stack resume-grounded AI assistant with streaming answers.",
+        "Implemented PDF resume upload, download, and text extraction.",
+        "Added interview questions, job-match scoring from 0 to 100, and a why-hire mode.",
+        "Added speech-to-text, text-to-speech, English, Hindi, and Bengali support, conversation history, and PDF chat export.",
+        "Deployed the React frontend on Vercel and the FastAPI backend on Render."
+      ],
+      "live_url": "https://own-ai-drab.vercel.app",
       "github_url": "https://github.com/mrinmoykumarmaity/own_ai"
     },
     {
-      "name": "ResumeParser AI - Intelligent Candidate Screening System",
-      "description": "Developed an AI-powered candidate-screening system that extracts relevant information from resumes, compares candidate profiles with job descriptions, calculates an explainable match score, identifies missing skills, and provides evidence-based recommendations. Used Pydantic models to validate structured LLM outputs and improve reliability.",
-      "technologies": [
-        "Python",
-        "Groq API",
-        "Pydantic",
-        "Prompt Engineering",
-        "Generative AI",
-        "Structured JSON"
-      ],
-      "github_url": "https://github.com/mrinmoykumarmaity/resume_persour"
-    },
-    {
       "name": "AI-Powered Vector Database and RAG System",
-      "description": "Developed an educational vector database and retrieval-augmented generation system with document chunking, semantic search, vector similarity comparison, document embeddings, and an interactive web interface. Integrated local Ollama models to generate embeddings and context-aware answers from retrieved document chunks. Built REST APIs for document management, semantic retrieval, and vector-search operations.",
+      "duration": "July 2026 - Present",
+      "description": "A Python-based semantic search and retrieval-augmented generation system with document chunking, vector retrieval, local embeddings, context-aware question answering, and interactive visualization.",
       "technologies": [
         "Python",
         "Flask",
         "Ollama",
         "Llama 3.2",
+        "nomic-embed-text",
         "Vector Database",
-        "Semantic Search",
-        "REST API",
-        "RAG"
+        "RAG",
+        "REST API"
+      ],
+      "highlights": [
+        "Developed semantic search and RAG with document chunking, vector retrieval, and interactive visualization.",
+        "Integrated Ollama's nomic-embed-text and Llama 3.2 for local embeddings and context-aware answers.",
+        "Built Flask REST APIs for vector search, document management, semantic retrieval, and algorithm benchmarking."
       ],
       "github_url": "https://github.com/mrinmoykumarmaity/ai-vector-db-rag-system"
-    }
-  ],
-  "experience": [
-    {
-      "role": "Data Analytics Virtual Experience Program",
-      "organization": "Tata Group through Forage",
-      "duration": "July 2025",
-      "description": "Conducted exploratory data analysis using generative AI tools to evaluate data quality and identify customer delinquency risk indicators. Developed a predictive-modelling framework and proposed an AI-driven collections strategy incorporating automation, responsible AI, and regulatory compliance."
     },
     {
-      "role": "Data Analyst Virtual Experience Program",
-      "organization": "Deloitte Australia through Forage",
-      "duration": "May 2025 to July 2025",
-      "description": "Analyzed business and forensic datasets to identify patterns, inconsistencies, and actionable insights. Developed an interactive Tableau dashboard and used Excel to classify data, perform analysis, and communicate findings through a structured business report."
+      "name": "ResumeParser AI - Intelligent Candidate Screening System",
+      "description": "An AI-powered resume screening system that parses PDF and DOCX resumes, extracts skills, education, and experience, and produces structured candidate-job match results.",
+      "technologies": [
+        "Python",
+        "Groq LLM",
+        "Pydantic",
+        "Prompt Engineering"
+      ],
+      "highlights": [
+        "Parsed PDF and DOCX resumes and extracted skills, education, and experience.",
+        "Generated structured JSON match scores, candidate rankings, and missing-skill identification."
+      ],
+      "github_url": "https://github.com/mrinmoykumarmaity/resume_persour"
     }
   ],
-  "achievements": [
-    "Designed and deployed a full-stack AI representative with a React frontend, FastAPI backend, streaming LLM responses, and resume-grounded question answering.",
-    "Developed multiple practical AI applications covering generative AI, semantic search, vector databases, RAG, structured LLM outputs, and intelligent candidate screening.",
-    "Successfully deployed AI applications using Vercel and Render with secure environment-variable configuration and cross-origin API integration."
+  "education": [
+    {
+      "institution": "Kharagpur College",
+      "location": "West Bengal, India",
+      "degree": "Bachelor of Computer Applications (BCA)",
+      "specialization": "Computer Science",
+      "start_year": 2023,
+      "end_year": 2027,
+      "status": "Expected November 2027"
+    },
+    {
+      "institution": "Jhargram Kumud Kumari Institution",
+      "location": "West Bengal, India",
+      "degree": "Higher Secondary Education (Class XII)",
+      "specialization": "Computer Science",
+      "end_year": 2023
+    }
   ],
   "certifications": [
     {
-      "name": "Tata Group Data Analytics Virtual Experience Program",
-      "issuer": "Forage",
+      "name": "Introduction to Agent Skills & Claude 101",
+      "issuer": "Anthropic",
+      "date": "July 2026",
+      "year": 2026,
+      "credential_url": null
+    },
+    {
+      "name": "Make Agentic AI Work for You",
+      "issuer": "IBM",
+      "date": "June 2026",
+      "year": 2026,
+      "credential_url": null
+    },
+    {
+      "name": "Data Analysis Using Python",
+      "issuer": "IBM",
+      "date": "August 2025",
       "year": 2025,
       "credential_url": null
     },
     {
-      "name": "Deloitte Australia Data Analytics Virtual Experience Program",
-      "issuer": "Forage",
+      "name": "GenAI in Data Analytics",
+      "issuer": "Meta",
+      "date": "July 2025",
+      "year": 2025,
+      "credential_url": null
+    },
+    {
+      "name": "Google for Education Certifications",
+      "issuer": "Google",
+      "date": "October 2025",
       "year": 2025,
       "credential_url": null
     }
+  ],
+  "achievements": [
+    "Built and deployed a full-stack resume-grounded AI representative using React, FastAPI, Groq, Vercel, and Render.",
+    "Successfully analyzed a 77-packet PCAP test capture with zero parsing errors using a custom Python Deep Packet Inspection system."
   ],
   "social_links": {
     "linkedin": "https://www.linkedin.com/in/mrinmoykumarmaity/",
     "github": "https://github.com/mrinmoykumarmaity",
     "portfolio": "https://portfolio-website-eta-eight-93.vercel.app/",
-    "candidate_ai": "https://own-ai-drab.vercel.app/"
+    "candidate_ai": "https://own-ai-drab.vercel.app"
   }
 }
