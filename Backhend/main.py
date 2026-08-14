@@ -37,7 +37,7 @@ logging.basicConfig(
 logger = logging.getLogger("candidate_ai")
 
 BASE_DIR = Path(__file__).resolve().parent
-DEFAULT_RESUME_PATH = BASE_DIR / "my_resume_new.pdf"
+DEFAULT_RESUME_PATH = BASE_DIR / "my _new resume.pdf"
 
 
 class Settings(BaseSettings):
@@ -124,7 +124,7 @@ class ResumeStore:
             exclude_defaults=True,
         )
         self._resume_text = ""
-        self._original_filename = "my_resume_new.pdf"
+        self._original_filename = "my_new resume.pdf"
         self._context_text = self._build_context("")
         self._revision = 0
 
