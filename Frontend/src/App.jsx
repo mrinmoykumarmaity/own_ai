@@ -547,7 +547,7 @@ export default function App() {
         <div className="sidebar-scroll">
           <div className="sidebar-label"><span>Recruiter tools</span><span className="section-count">6</span></div>
           <div className="feature-tools">
-            <button onClick={() => uploadRef.current?.click()}><span className="tool-icon"><Icon name="upload" /></span><span className="tool-copy"><b>{text.upload}</b><small>Switch the active profile</small></span><Icon name="chevron" size={15} /></button>
+            
             <button onClick={() => openPanel("interview")}><span className="tool-icon"><Icon name="interview" /></span><span className="tool-copy"><b>{text.interview}</b><small>Generate role-specific prompts</small></span><Icon name="chevron" size={15} /></button>
             <button onClick={() => openPanel("match")}><span className="tool-icon"><Icon name="target" /></span><span className="tool-copy"><b>{text.match}</b><small>Compare resume and job</small></span><Icon name="chevron" size={15} /></button>
             <button onClick={() => openPanel("hire")}><span className="tool-icon"><Icon name="sparkles" /></span><span className="tool-copy"><b>{text.hire}</b><small>Create a recruiter summary</small></span><Icon name="chevron" size={15} /></button>
