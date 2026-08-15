@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     )
 
     groq_api_key: str = ""
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "openai/gpt-oss-120b"
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     public_base_url: str = "http://127.0.0.1:8000"
     max_upload_mb: int = 8
